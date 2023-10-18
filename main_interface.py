@@ -747,8 +747,7 @@ class Ui_main_window(object):
         sizePolicy.setHeightForWidth(self.a1.sizePolicy().hasHeightForWidth())
         self.a1.setSizePolicy(sizePolicy)
         self.a1.setStyleSheet("background-color : #b58863;\n"
-"border: 0px solid black;\n"
-"border-bottom : 2px solid black;")
+"border: 0px solid black;\n")
         self.a1.setText("")
         self.a1.setObjectName("a1")
         self.rank_1_squares_horizontal_layout.addWidget(self.a1)
@@ -759,8 +758,7 @@ class Ui_main_window(object):
         sizePolicy.setHeightForWidth(self.b1.sizePolicy().hasHeightForWidth())
         self.b1.setSizePolicy(sizePolicy)
         self.b1.setStyleSheet("background-color : #f0d9b5;\n"
-"border: 0px solid black;\n"
-"border-bottom : 2px solid black;")
+"border: 0px solid black;\n")
         self.b1.setText("")
         self.b1.setDefault(False)
         self.b1.setFlat(False)
@@ -773,8 +771,7 @@ class Ui_main_window(object):
         sizePolicy.setHeightForWidth(self.c1.sizePolicy().hasHeightForWidth())
         self.c1.setSizePolicy(sizePolicy)
         self.c1.setStyleSheet("background-color : #b58863;\n"
-"border: 0px solid black;\n"
-"border-bottom : 2px solid black;")
+"border: 0px solid black;\n")
         self.c1.setText("")
         self.c1.setObjectName("c1")
         self.rank_1_squares_horizontal_layout.addWidget(self.c1)
@@ -785,8 +782,7 @@ class Ui_main_window(object):
         sizePolicy.setHeightForWidth(self.d1.sizePolicy().hasHeightForWidth())
         self.d1.setSizePolicy(sizePolicy)
         self.d1.setStyleSheet("background-color : #f0d9b5;\n"
-"border: 0px solid black;\n"
-"border-bottom : 2px solid black;")
+"border: 0px solid black;\n")
         self.d1.setText("")
         self.d1.setObjectName("d1")
         self.rank_1_squares_horizontal_layout.addWidget(self.d1)
@@ -797,8 +793,7 @@ class Ui_main_window(object):
         sizePolicy.setHeightForWidth(self.e1.sizePolicy().hasHeightForWidth())
         self.e1.setSizePolicy(sizePolicy)
         self.e1.setStyleSheet("background-color : #b58863;\n"
-"border: 0px solid black;\n"
-"border-bottom : 2px solid black;")
+"border: 0px solid black;\n")
         self.e1.setText("")
         self.e1.setObjectName("e1")
         self.rank_1_squares_horizontal_layout.addWidget(self.e1)
@@ -809,8 +804,7 @@ class Ui_main_window(object):
         sizePolicy.setHeightForWidth(self.f1.sizePolicy().hasHeightForWidth())
         self.f1.setSizePolicy(sizePolicy)
         self.f1.setStyleSheet("background-color : #f0d9b5;\n"
-"border: 0px solid black;\n"
-"border-bottom : 2px solid black;")
+"border: 0px solid black;\n")
         self.f1.setText("")
         self.f1.setObjectName("f1")
         self.rank_1_squares_horizontal_layout.addWidget(self.f1)
@@ -821,8 +815,7 @@ class Ui_main_window(object):
         sizePolicy.setHeightForWidth(self.g1.sizePolicy().hasHeightForWidth())
         self.g1.setSizePolicy(sizePolicy)
         self.g1.setStyleSheet("background-color : #b58863;\n"
-"border: 0px solid black;\n"
-"border-bottom : 2px solid black;")
+"border: 0px solid black;\n")
         self.g1.setText("")
         self.g1.setObjectName("g1")
         self.rank_1_squares_horizontal_layout.addWidget(self.g1)
@@ -833,8 +826,7 @@ class Ui_main_window(object):
         sizePolicy.setHeightForWidth(self.h1.sizePolicy().hasHeightForWidth())
         self.h1.setSizePolicy(sizePolicy)
         self.h1.setStyleSheet("background-color : #f0d9b5;\n"
-"border: 0px solid black;\n"
-"border-bottom : 2px solid black;")
+"border: 0px solid black;\n")
         self.h1.setText("")
         self.h1.setObjectName("h1")
         self.rank_1_squares_horizontal_layout.addWidget(self.h1)
