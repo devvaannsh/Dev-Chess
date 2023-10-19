@@ -1,8 +1,10 @@
 # Import the modules
-from PyQt5.QtWidgets import QApplication, QMainWindow  
+from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton
 from PyQt5.QtSvg import QSvgWidget
 from PyQt5.QtGui import QPalette
+from PyQt5.QtCore import QRectF
 from main_interface import Ui_main_window       # self-defined module
+from validation import ValidMoves               # self-defined module
 import sys
 
 
@@ -10,8 +12,9 @@ class MainWindow(QMainWindow, Ui_main_window):
     """This is the main class which sets up the UI and leads the program ahead. It inherits from two classes, QMainWindow is the pre-defined class and Ui-main_window is the self-defined class which holds the code for the UI"""
 
     selected_piece = None  # this static variable will hold the current selected piece
-    previous_square = None # this static variable will hold the square from where the piece is to be removed
-    previous_square_index = None # this static variable will hold the index of the previous square, to update the position dictionary
+    selected_old_square_address = None # this static variable will hold the square (QPushButton's address) from where the piece is to be removed
+    selected_old_square_index = None # this static variable will hold the index of the previous square, to update the position dictionary
+    valid_moves = []    # this list will store all the valid moves in this class, which the methods will access to get the list of valid moves from the ValidMoves class, we will maintain this list after every operation
 
     def __init__(self):
         super().__init__()
@@ -19,6 +22,8 @@ class MainWindow(QMainWindow, Ui_main_window):
         self.pieces_positions() # this method maintains a dictionary that keeps track of the positions of all the pieces
         self.setup_pieces()     # this method is for setting up the pieces initially on the board
         self.squares_signals_slots() # this method just links every square with the method and passes the index of the square to the method 
+
+        self.validate = ValidMoves() # create an instance of the ValidMoves class 
 
 
     def squares_signals_slots(self):
@@ -100,62 +105,145 @@ class MainWindow(QMainWindow, Ui_main_window):
 
 
     def square_clicked(self, square_index):
-        """
-        This method gets triggered when any square gets clicked. 
-        If user clicks on a piece to select it, the piece, square gets selected and the background color of the selected square changes, to let user know that the square is selected
-        If user clicks on a piece to move it, the piece moves to the new square from the old one.
-        """
+        """This method will get triggered when any square will get clicked"""
+
+        # for selecting a piece
+        if square_index in self.position.keys() and self.position[square_index][0] == 'w' and MainWindow.selected_piece is None:  # to make sure that user selects a white piece, and no other piece is selected at the time
+            self.select_piece(square_index)
+        elif square_index in self.position.keys() and self.position[square_index][0] == 'w' and MainWindow.selected_piece is not None: # when a piece is already selected and user wants to change the selected piece
+            self.change_selected_piece(square_index)
+        else:   # means user either clicked on a square with a black piece or no piece at all, so we move the selected piece
+            if MainWindow.selected_piece is not None:   # only call the move_piece method when some piece is selected by the user
+                self.move_piece(square_index, self.sender())    # here self.sender() and square_index is for the square where the piece must be moved
+
+
+    def select_piece(self, square_index):
+        """This method is for selecting the piece initially (from initially it means that no piece is selected right then)"""
+
+        # setting the values of the static variable to the current selected piece
+        MainWindow.selected_piece = self.position[square_index] # to select the piece
+        MainWindow.selected_old_square_address = self.sender()  # to keep track of the square from where the piece is to be removed
+        MainWindow.selected_old_square_index = square_index  # to keep track of the square index to update the position dictionary
+
+        self.selected_square_background(MainWindow.selected_old_square_address)   # this method will change the background-color of the selected square
+
+        # fetching all the valid moves for the piece (MainWindow.valid_moves stores the index of all the valid squares)
+        MainWindow.valid_moves = self.validate.menu(MainWindow.selected_piece, MainWindow.selected_old_square_index, self.position)
+        self.valid_moves_square_background(MainWindow.valid_moves)  # for changing the background color of all the square which are valid
+
+
+    def valid_moves_square_background(self, valid_moves):
+        """This method is responsible to add an image that helps identify the valid squares for the user"""
+        for valid_move_index in valid_moves:
+
+            if valid_move_index in self.position.keys():    # means that some black is present on the square, so here we don't add the image but instead change the background color of the square
+                valid_move_square_address = self.findChild(QPushButton, valid_move_index)   # getting the address of the square from the index of it
+                if valid_move_square_address is not None:   # make sure that the address is found
+                    if (ord(valid_move_index[0]) + int(valid_move_index[1])) % 2 == 0:  # this is black
+                        valid_move_square_address.setStyleSheet("background-color : #646e40;""border: 0px solid black;")
+                    else:   # this is white
+                        valid_move_square_address.setStyleSheet("background-color : #82976a;""border: 0px solid black;")
+
+
+            else:   # means no piece is present on the square
+                valid_move_square_address = self.findChild(QPushButton, valid_move_index)   # getting the address of the square from the index of it
+                if valid_move_square_address is not None:   # make sure that the address is found
+
+                    # find out if the square is black or white [logic is that if the ascii value of the file + the rank becomes a odd number then the square is black, else white]
+                    if (ord(valid_move_index[0]) + int(valid_move_index[1])) % 2 == 0:  # this is black
+                        path = f"assets\\valid_moves_images\\valid_move_black_image.svg"
+                        image = QSvgWidget(path)
+                        image.setGeometry(0, 0, 90, 85)
+                        image.setParent(valid_move_square_address)
+                        image.show()
+
+                    else:   # this is white
+                        path = f"assets\\valid_moves_images\\valid_move_white_image.svg"
+                        image = QSvgWidget(path)
+                        image.setGeometry(0, 0, 90, 85)
+                        image.setParent(valid_move_square_address)
+                        image.show()
+
+    
+    def reset_valid_moves_square_background(self, valid_moves):
+        """This method is responsible to reset the valid squares to its normal state [remove the images]"""
+        for valid_move_index in valid_moves:
+            if valid_move_index in self.position.keys():    # means that some black is present on the square, so we reset the background color
+                valid_move_square_address = self.findChild(QPushButton, valid_move_index)   # getting the address of the square from the index of it
+                if valid_move_square_address is not None:   # make sure that the address is found
+                    background_color = valid_move_square_address.palette().color(QPalette.Background)
+                    if background_color.name() == "#646e40":    # for black
+                        valid_move_square_address.setStyleSheet("background-color : #b58863;""border: 0px solid black;")
+                    if background_color.name() == "#82976a":    # for white
+                        valid_move_square_address.setStyleSheet("background-color : #f0d9b5;""border: 0px solid black;")
         
-        # this code will get executed when user clicks on a square with white piece. It basically selects the piece
-        if square_index in self.position.keys() and self.position[square_index][0] == 'w':
-            # to change the background color of the square selected
-            background_color = self.sender().palette().color(QPalette.Background)   # get the background color of the square
-            if background_color.name() == "#b58863":    # for black
-                self.sender().setStyleSheet("background-color : #a57742;""border: 0px solid black;")
-            if background_color.name() == "#f0d9b5":    # for white
-                self.sender().setStyleSheet("background-color : #d4c3a0;""border: 0px solid black;")
-                
-            # reset the background-color of the first square if two white pieces are selected one after another(means that user selects a piece and then changes the selection to another piece)
-            if MainWindow.previous_square is not None and self.sender() != MainWindow.previous_square:
-                background_color = MainWindow.previous_square.palette().color(QPalette.Background)
-                if background_color.name() == "#a57742":    # for black
-                    MainWindow.previous_square.setStyleSheet("background-color : #b58863;""border: 0px solid black;")
-                if background_color.name() == "#d4c3a0":    # for white
-                    MainWindow.previous_square.setStyleSheet("background-color : #f0d9b5;""border: 0px solid black;")
+            else:   # means no piece is on the square, so we remove the image
+                valid_move_square_address = self.findChild(QPushButton, valid_move_index)   # getting the address of the square from the index of it
+                if valid_move_square_address is not None:   # make sure that the address is found
+                    remove_image = valid_move_square_address.findChildren(QSvgWidget)[0]
+                    remove_image.setParent(None)
 
-            MainWindow.selected_piece = self.position[square_index] # to select the piece
-            MainWindow.previous_square = self.sender()  # to keep track of the square from where the piece is to be removed
-            MainWindow.previous_square_index = square_index  # to keep track of the square index to update the position dictionary
-         
-        # this code will get executed when user clicks on a square with no piece or a black piece on it
-        else:
-            if self.selected_piece is not None:     # make sure that some piece is selected or else we don't have to do anything
-                
-                # to remove the previous piece from the square (for example when taking a black piece, we remove the black piece first)
-                if len(self.sender().findChildren(QSvgWidget)) > 0: # check if there is some piece on the square previously, if yes remove the piece 
-                    remove_piece = self.sender().findChildren(QSvgWidget)[0]
-                    remove_piece.setParent(None)
 
-                piece = MainWindow.previous_square.findChildren(QSvgWidget)[0]    # find out which piece is inside the button, we use [0] because findChildren method returns a list of all the children, in our case there is only one children so we use [0]
-                piece.setParent(self.sender())  # change the parent to the new square which is clicked
-                piece.show()    # display the image
+    def selected_square_background(self, square):
+        """This method is responsible to change the background color of the selected square"""
+        background_color = square.palette().color(QPalette.Background)   # get the background color of the square
+        if background_color.name() == "#b58863":    # for black
+            square.setStyleSheet("background-color : #656f41;""border: 0px solid black;")
+        if background_color.name() == "#f0d9b5":    # for white
+            square.setStyleSheet("background-color : #829769;""border: 0px solid black;")
 
-                # replace the old_square_index with the new_square_index to keep the position dictionary updated
-                if MainWindow.previous_square_index in self.position.keys():
-                    del self.position[MainWindow.previous_square_index]
-                    self.position[square_index] = MainWindow.selected_piece
 
-                # reset the background color of the square which was selected to normal
-                background_color = MainWindow.previous_square.palette().color(QPalette.Background)
-                if background_color.name() == "#a57742":    # for black
-                    MainWindow.previous_square.setStyleSheet("background-color : #b58863;""border: 0px solid black;")
-                if background_color.name() == "#d4c3a0":    # for white
-                   MainWindow.previous_square.setStyleSheet("background-color : #f0d9b5;""border: 0px solid black;")
+    def reset_selected_square_background(self, square):
+        """This method will get triggered when user changes their selection. It resets the background-color of the previously selected square"""
+        background_color = square.palette().color(QPalette.Background)   # get the background color of the square
+        if background_color.name() == "#656f41":    # for black
+            square.setStyleSheet("background-color : #b58863;""border: 0px solid black;")
+        if background_color.name() == "#829769":    # for white
+            square.setStyleSheet("background-color : #f0d9b5;""border: 0px solid black;")
 
-                # set the static variables to None as we have done the operation
-                MainWindow.selected_piece = None   
-                MainWindow.previous_square = None
-                MainWindow.previous_square_index = None
+
+    def change_selected_piece(self, square_index):
+        """This method will get triggered when user wants to change their selection, i.e. when they selected a different piece and then changed the selection to another piece"""
+
+        # reset the backgorund color of the previously selected square to normal
+        self.reset_selected_square_background(MainWindow.selected_old_square_address)
+        # reset the valid squares for the previous state to normal
+        self.reset_valid_moves_square_background(MainWindow.valid_moves)
+
+        MainWindow.valid_moves = [] # reset back the valid moves list to empty
+        # now just call select_piece method to select the new piece
+        self.select_piece(square_index)
+
+
+    def move_piece(self, square_index, square_index_address):
+        """This method is responsible to move the selected piece from its initial square to the new square"""
+        # make move only if the index is in the list of valid moves
+        if square_index in MainWindow.valid_moves:
+            if square_index in self.position.keys(): # checks if there is any black piece on the square
+                remove_piece = square_index_address.findChildren(QSvgWidget)[0]    # for removing the black piece from the board
+                remove_piece.setParent(None)
+
+            # add the selected piece to the new square
+            piece = MainWindow.selected_old_square_address.findChildren(QSvgWidget)[0]    # find out which piece is inside the square from where we are removing the piece
+            piece.setParent(square_index_address)  # change the parent to the new square which is clicked
+            piece.show()    # display the image
+
+            # replace the old_square_index with the new_square_index to keep the position dictionary updated
+            del self.position[MainWindow.selected_old_square_index]
+            self.position[square_index] = MainWindow.selected_piece
+
+
+            # reset the background color of the square from where the square was moved
+            self.reset_selected_square_background(MainWindow.selected_old_square_address)
+            # reset the valid moves images from the valid squares to its normal state
+            self.reset_valid_moves_square_background(MainWindow.valid_moves)
+
+            # set the static variables to None as we have done the operation
+            MainWindow.selected_piece = None   
+            MainWindow.selected_old_square_address = None
+            MainWindow.selected_old_square_index = None
+            MainWindow.valid_moves = []
+
 
 
 # Initialize the application, display the main window and start the application event loop
