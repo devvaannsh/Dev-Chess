@@ -2,8 +2,8 @@
 class ValidMoves():
     """ This class is responsible for making only valid moves so that no invalid moves can be played"""
 
-    def __init__(self, piece_to_move, index_of_piece, position):
-        """This constructor takes three parameters, one is the piece, the other is the position of the piece and the third is the dictionary which stores the position of all the pieces"""
+    def menu(self, piece_to_move, index_of_piece, position):
+        """This method takes three parameters, one is the piece, the other is the position of the piece and the third is the dictionary which stores the position of all the pieces"""
         self.piece_to_move = piece_to_move
         self.index_of_piece = index_of_piece
         self.position = position
@@ -61,6 +61,8 @@ class ValidMoves():
         # incase something goes wrong
         else:
             pass
+
+        return self.valid_moves
 
 
     def white_rook(self):
