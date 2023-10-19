@@ -1,3 +1,5 @@
 try_features.py
 clean_code.py
 test.py
+temp_file.py
+__pycache__
