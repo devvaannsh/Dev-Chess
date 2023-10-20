@@ -223,6 +223,11 @@ class MainWindow(QMainWindow, Ui_main_window):
                 remove_piece = square_index_address.findChildren(QSvgWidget)[0]    # for removing the black piece from the board
                 remove_piece.setParent(None)
 
+            # reset the background color of the square from where the square was moved
+            self.reset_selected_square_background(MainWindow.selected_old_square_address)
+            # reset the valid moves images from the valid squares to its normal state
+            self.reset_valid_moves_square_background(MainWindow.valid_moves)
+
             # add the selected piece to the new square
             piece = MainWindow.selected_old_square_address.findChildren(QSvgWidget)[0]    # find out which piece is inside the square from where we are removing the piece
             piece.setParent(square_index_address)  # change the parent to the new square which is clicked
@@ -231,12 +236,6 @@ class MainWindow(QMainWindow, Ui_main_window):
             # replace the old_square_index with the new_square_index to keep the position dictionary updated
             del self.position[MainWindow.selected_old_square_index]
             self.position[square_index] = MainWindow.selected_piece
-
-
-            # reset the background color of the square from where the square was moved
-            self.reset_selected_square_background(MainWindow.selected_old_square_address)
-            # reset the valid moves images from the valid squares to its normal state
-            self.reset_valid_moves_square_background(MainWindow.valid_moves)
 
             # set the static variables to None as we have done the operation
             MainWindow.selected_piece = None   
