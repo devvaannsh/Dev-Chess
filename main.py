@@ -2,9 +2,9 @@
 from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton
 from PyQt5.QtSvg import QSvgWidget
 from PyQt5.QtGui import QPalette
-from PyQt5.QtCore import QRectF
 from main_interface import Ui_main_window       # self-defined module
 from validation import ValidMoves               # self-defined module
+from computer_move import ComputerMove          # self-defined module
 import sys
 
 
@@ -24,6 +24,7 @@ class MainWindow(QMainWindow, Ui_main_window):
         self.squares_signals_slots() # this method just links every square with the method and passes the index of the square to the method 
 
         self.validate = ValidMoves() # create an instance of the ValidMoves class 
+        self.computer_move = ComputerMove() # create an instance of the ComputerMove class
 
 
     def squares_signals_slots(self):
@@ -243,6 +244,27 @@ class MainWindow(QMainWindow, Ui_main_window):
             MainWindow.selected_old_square_index = None
             MainWindow.valid_moves = []
 
+            # call the move method from the ComputerMove class
+            computer_move_made = self.computer_move.move(self.position) # it returns list[3] where 0th item will be the index of the square where the piece is to be moved, 1st item will be the index of the square from where the piece is to be moved and 2nd item will be the piece that is to be moved
+            if len(computer_move_made) == 3:    # make sure the computer_move_made is list is ok
+                self.move_piece_computer(computer_move_made)    # call the method to move the piece
+
+
+    def move_piece_computer(self, computer_move_made):
+        """This method is responsible for making the move for the computer"""
+        to_index_address = self.findChild(QPushButton, computer_move_made[0])  # get the address of the square to where the piece is to be moved
+        if computer_move_made[0] in self.position.keys():   # this will get true when there is a white piece already on the square, so we remove the white piece first
+            remove_piece = to_index_address.findChildren(QSvgWidget)[0]
+            remove_piece.setParent(None)   
+
+        from_index_address = self.findChild(QPushButton, computer_move_made[1])  # get the address of the square from where the piece is to be moved 
+        piece = from_index_address.findChildren(QSvgWidget)[0]    # get the image of the piece from the square
+        piece.setParent(to_index_address)  # change the parent to the new square
+        piece.show()    # display the image
+
+        # updating the self.position dictionary
+        del self.position[computer_move_made[1]]
+        self.position[computer_move_made[0]] = computer_move_made[2]
 
 
 # Initialize the application, display the main window and start the application event loop
